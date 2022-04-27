@@ -1,4 +1,3 @@
-# starter_folder
 
 In this project, I chose to conduct a statistical analysis on the S&P 500 Index and 5 different companies from the U.S. In order for you to produce the same results as I did, please follow the instructions below:
 
