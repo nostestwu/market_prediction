@@ -1,12 +1,12 @@
 ---
-title: "My title"
-subtitle: "My subtitle if needed"
+title: "How Does the Performance in Different Industries Affecting the US Market During Recession"
+subtitle: "Finding correlation between S&P 500 and 5 different industries during 3 famous recessions"
 author: 
-  - First author
-  - Another author
-thanks: "Code and data are available at: LINK."
+  - Zecheng Wu
+thanks: "Code and data are available at: https://github.com/nostestwu/market_prediction"
 date: "`r format(Sys.time(), '%d %B %Y')`"
-abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
+abstract: "The S&P 500 index is the best overall measurement for the US market in which it is important for investors to determine whether they should keep more cash or invest more in the market. We have used the S&P 500 PE ratio, a ratio that measures the current share price relative to its earnings per share, to find out the time period for 3 recessions in 2002, 2018 and 2020. Then three tables are created which only contain the closing value for the S&P, AAPL(technology), MAR(real estate), SAFM(agriculture), NEM(gold) and XOM(gas) for each recession. The discovery from the result concludes that agriculture does not seem to get affected by recessions from the market and vice versa. In addition, I have created a multiple linear regression model by using the data from last year till this day to see if we can see any signs that the market might crash. We never know when the market will crash, but what we can do is to search for similar patterns from history and avoid our lost in the future."
+
 output:
   bookdown::pdf_document2
 toc: FALSE
@@ -14,66 +14,253 @@ bibliography: references.bib
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-
 library(tidyverse)
-library(palmerpenguins)
+library(ggplot2)
+
+setwd("/Users/nostest/Desktop/Github/market_prediction")
+
+S_P <- readr::read_csv("inputs/data/HistoricalPrices.csv")
+AAPL <- readr::read_csv("inputs/data/tech_AAPL.csv")
+MAR <- readr::read_csv("inputs/data/house_MAR.csv")
+SAFM <- readr::read_csv("inputs/data/agri_SAFM.csv")
+NEM <- readr::read_csv("inputs/data/gold_NEM.csv")
+XOM <- readr::read_csv("inputs/data/gas_XOM.csv")
+
+#Cleaning S&P
+S_P$Date <- as.Date(S_P$Date, "%m/%d/%y")
 ```
 
-# Introduction
+#Introduction
 
-You can and should cross-reference sections and sub-sections. For instance, Section \@ref(data). R Markdown automatically makes the sections lower case and adds a dash to spaces to generate labels, for instance, Section \@ref(first-discussion-point). 
+Recession has always been the fear for people since 2020 due to the COVID pandemic. Governments have printed more money and tried to save businesses when many of them declared bankruptcy that caused the overall market to go down. The action of printing more money creates inflation, but the price for many fundamentals and food didn't seem to inflate in 2021. Many large investing companies have left their position in the trading market and kept more cash in their hands. This would cause the market to have less cash flow and many people believe that the market will crash eventually. However, nothing happened until 2022 February 24, 2022 when Russia invaded Ukraine and many investors started to trade again. Many sanctions against Russia appeared and the current market is at a very dangerous position right now. Nobody knows when the war will end, and some people believe that this war is a buffer for the recession. Recession is not a bad thing, it gives opportunities for many new companies to startup in their country. Uber, Instagram, WhatsApp, etc that became successful after the recession in 2008(foxbusiness). Thus, we want to know which industries might fall and which industries might rise during a recession. 
 
+We begin with the S&P 500 PE ratio (S&P PE ratio Y chart) which simply means a higher PE ratio implies the S&P 500 index is more overvalued. Since the S&P 500 is a U.S index, all the companies which I have selected to compare with the index are also from the U.S. I marked the starting and ending point for the peaks. Surprisingly, the years within these peaks are at the exact same time period as the recessions. Knowing that in 2002 it was the tech bubble and in 2008 it was the housing bubble, I have selected Apple(AAPL) as the representative for the technology industry and Marriott International(MAR) for the real estate industry. The sanctions on Russia have largely affected the gas price worldwide recently, thus I have added the Exxon Mobil Corporation(XOM) for the gas industry. Sanderson Farms(SAFM) and Newmont Corporation (NEM) are the representatives for agriculture and gold. I collected these data from yahoo finance starting from 1990 January 1 to 2022 April 21 by daily and insert them into R studio(R Core Team 2020). The first table combines the closing value for S&P 500 and these industry representatives from 2001 January 01 to 2002 september 30. This is because the first peak for the S&P 500 PE ratio is between 2001 first quarter to 2002 third quarter. Next, I have created a multiple linear model setting the S_P as the response variable and five other industries as the explanatory variables. Lastly, I use the summary function to see which variables are significant to our model. I have repeated the same process for the “Great Recession” from 2008/07/01 to 2010/01/01 and the “Covid Recession” from 2020/01/01 to 2021/09/30. In both 2002 and 2008 recession model summary, the agriculture industry does not appear to be significant meaning that this industry is not correlated to the market. This concludes that our best fit model will only contain the values from four industries.
 
+The predicting model I have created starts from 2021/04/01 to 2022/04/02 to test out whether our previous assumption was reliable. The exact same process was done except I have created 8 different models to see which one would be the best one to use for our current date. The result shows model 6 was the best model fit, which somehow it is the exact model that we got from the previous three recessions. These findings make me wonder if we know the performance for these four industries, does it mean that we can see the signs for recession? Before we want to predict these stocks, we want to see if the S&P 500 PE ratio has met our criteria. According to the PE ratio chart, every recession has hit above 40 at least. Currently we are at 24.09 right now which means a recession won't happen too soon. 
+
+The reason why this model is important is because most people want to have a brief idea about the market and how it is working but don’t know where to start. By understanding the model, we can also think about our society logically. If everyone is losing money in the market, people will still spend money on food even if everything is inflated. The sanctions for the Russian War had a huge impact on gas and energy, but people will still pay more for them since these are the essential things they need to survive just like food. Thus, peace is the best solution for the economy. 
+
+The remainder of this paper is : Section \@ref(Data) explains the data that we collected from yahoo finance.Section \@ref(Model) shows the model that we are using. Section \@ref(Result) explains what we found from the models. Section \@ref(Discussion) explains interesting discoveries and future improvements.
 
 # Data
 
-Our data is of penguins (Figure \@ref(fig:bills)).
+```{r echo=FALSE, warning=FALSE, message=FALSE}
 
-```{r bills, fig.cap="Bills of penguins", echo = FALSE}
-ggplot(penguins, aes(x = island, fill = species)) +
-  geom_bar(alpha = 0.8) +
-  scale_fill_manual(values = c("darkorange","purple","cyan4"),
-                    guide = FALSE) +
-  theme_minimal() +
-  facet_wrap(~species, ncol = 1) +
-  coord_flip()
+
+S_P_graph <- ggplot(data = S_P, aes(x = Date, y = Close)) + 
+  geom_line() + 
+  geom_vline(xintercept = as.numeric(as.Date("2001/01/01")), color = 'red', linetype = 2) +
+  geom_vline(xintercept = as.numeric(as.Date("2002/09/30")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2008/07/01")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2010/06/30")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2020/01/01")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2021/09/30")), color = 'red', linetype = 2) +
+  labs(title = "S&P 500", caption = "Figure 1")
+
+
+AAPL_graph <- ggplot(data = AAPL, aes(x = Date, y = Close)) + 
+  geom_line() + 
+  geom_vline(xintercept = as.numeric(as.Date("2001/01/01")), color = 'red', linetype = 2) +
+  geom_vline(xintercept = as.numeric(as.Date("2002/09/30")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2008/07/01")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2010/06/30")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2020/01/01")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2021/09/30")), color = 'red', linetype = 2) +
+  labs(title = "APPLE (AAPL)", caption = "Figure 2")
+
+
+MAR_graph <- ggplot(data = MAR, aes(x = Date, y = Close)) + 
+  geom_line() + 
+  geom_vline(xintercept = as.numeric(as.Date("2001/01/01")), color = 'red', linetype = 2) +
+  geom_vline(xintercept = as.numeric(as.Date("2002/09/30")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2008/07/01")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2010/06/30")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2020/01/01")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2021/09/30")), color = 'red', linetype = 2) +
+  labs(title = "Marriott International (MAR)", caption = "Figure 3")
+
+SAFM_graph <- ggplot(data = SAFM, aes(x = Date, y = Close)) + 
+  geom_line() + 
+  geom_vline(xintercept = as.numeric(as.Date("2001/01/01")), color = 'red', linetype = 2) +
+  geom_vline(xintercept = as.numeric(as.Date("2002/09/30")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2008/07/01")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2010/06/30")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2020/01/01")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2021/09/30")), color = 'red', linetype = 2) +
+  labs(title = "Sanderson Farms, Inc. (SAFM)", caption = "Figure 4")
+
+NEM_graph <- ggplot(data = NEM, aes(x = Date, y = Close)) + 
+  geom_line() + 
+  geom_vline(xintercept = as.numeric(as.Date("2001/01/01")), color = 'red', linetype = 2) +
+  geom_vline(xintercept = as.numeric(as.Date("2002/09/30")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2008/07/01")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2010/06/30")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2020/01/01")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2021/09/30")), color = 'red', linetype = 2) +
+  labs(title = "Newmont Corporation (NEM)", caption = "Figure 5")
+
+XOM_graph <- ggplot(data = XOM, aes(x = Date, y = Close)) + 
+  geom_line() + 
+  geom_vline(xintercept = as.numeric(as.Date("2001/01/01")), color = 'red', linetype = 2) +
+  geom_vline(xintercept = as.numeric(as.Date("2002/09/30")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2008/07/01")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2010/06/30")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2020/01/01")), color = 'red', linetype = 2) + 
+  geom_vline(xintercept = as.numeric(as.Date("2021/09/30")), color = 'red', linetype = 2) +
+  labs(title = "Exxon Mobil Corporation (XOM)", caption = "Figure 6")
+
+S_P_graph
+AAPL_graph
+MAR_graph
+SAFM_graph
+NEM_graph
+XOM_graph
+
 ```
 
-Talk more about it.
 
-Also bills and their average (Figure \@ref(fig:billssssss)). (Notice how you can change the height and width so they don't take the whole page?)
+S&P 500 index tracks 500 publicly traded domestic companies in the U.S and the most well known index for people to use and see the overall U.S market. PE ratio stands for price per earning ratio, which means how many times the company is trading its earnings per share. For instance, a company has an earning of $100000 and 50000 shares outstanding. This means the earnings per share is $2 meaning each share you hold worth $2 dollars of its earnings. If this company offers each share $100, this means the PE ratio is 50, meaning this company is giving out the shares 50 times higher than its earning. It is obvious to see that we want to invest in companies that sell their shares very cheap and the earnings are super high which have a low PE ratio. Therefore, this is the reason why I consider the high PE ratio in S&P 500 to see when companies have their shares at a super high price while they are not making much money. 
 
-```{r billssssss, fig.cap="More bills of penguins", echo = FALSE, fig.width=8, fig.height=4}
+The five companies I have chosen to compare with the index are Apple(AAPL), Marriott International(MAR), Sanderson Farms(SAFM), Newmont Corporation (NEM), and Exxon Mobil Corporation(XOM). The reason why I have selected these companies is because all of these companies are one of the largest in their own industry and they have data since 1990. The first step I did is to download the daily data for each of these companies from yahoo finance and import them into rstudio. Then I went to the S&P 500 PE ratio website to record the time interval for each PE ratio peak. Unfortunately I do not have the account else I would have downloaded the actual data from the website. Then I have created a line graph for each of the companies and the index to see a general trend from 1990 to 2022 as we can see from Figure 1 to Figure 6. Instead of considering the entire chart, we want to break them into smaller parts which is the PE ratio time intervals we found earlier. I have combined the closed values from each company, renaming them and creating a model having the S&P as the y variable and different companies as the x variables. The first recession period starts from 2001/01/01 to 2002/09/30. I have repeated the same procedure for intervals from 2008/07/01 to 2010/06/30 and from 2020/01/01 to 2021/09/30, the summary tables are displayed as following:
 
-# This needs to be about the random data tha tI sasmpled?
-ggplot(penguins, aes(x = island, fill = species)) +
-  geom_bar(alpha = 0.8) +
-  scale_fill_manual(values = c("darkorange","purple","cyan4"),
-                    guide = FALSE) +
-  theme_minimal() +
-  facet_wrap(~species, ncol = 1) +
-  coord_flip()
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+
+# Recession 1: tech bubble
+
+r1_S_P <- S_P %>% filter(Date >= as.Date("2001/01/01") & Date <= as.Date("2002/09/30"))
+r1_AAPL <- AAPL %>% filter(Date >= as.Date("2001/01/01") & Date <= as.Date("2002/09/30"))
+r1_MAR <- MAR %>% filter(Date >= as.Date("2001/01/01") & Date <= as.Date("2002/09/30"))
+r1_SAFM <- SAFM %>% filter(Date >= as.Date("2001/01/01") & Date <= as.Date("2002/09/30"))
+r1_NEM <- NEM %>% filter(Date >= as.Date("2001/01/01") & Date <= as.Date("2002/09/30"))
+r1_XOM <- XOM %>% filter(Date >= as.Date("2001/01/01") & Date <= as.Date("2002/09/30"))
+
+#combining all tables
+
+r1_S_P <- rename(r1_S_P, S_P = Close) %>% 
+  select(Date, S_P)
+r1_AAPL <- rename(r1_AAPL, AAPL = Close) %>% 
+  select(Date, AAPL)
+r1_MAR <- rename(r1_MAR, MAR = Close) %>% 
+  select(Date, MAR)
+r1_SAFM <- rename(r1_SAFM, SAFM = Close) %>% 
+  select(Date, SAFM)
+r1_NEM <- rename(r1_NEM, NEM = Close) %>% 
+  select(Date, NEM)
+r1_XOM <- rename(r1_XOM, XOM = Close) %>% 
+  select(Date, XOM)
+
+clean1 <- inner_join(r1_S_P, r1_AAPL, by = "Date")
+clean2 <- inner_join(clean1, r1_MAR, by = "Date")
+clean3 <- inner_join(clean2, r1_SAFM, by = "Date")
+clean4 <- inner_join(clean3, r1_NEM, by = "Date")
+recession1 <- inner_join(clean4, r1_XOM, by = "Date")
+
+#creating model
+
+model1 <- lm(S_P ~ AAPL + MAR + SAFM + NEM + XOM , data = recession1)
+summary(model1)
+
+# Recession 2: housing bubble
+
+r2_S_P <- S_P %>% filter(Date >= as.Date("2008/07/01") & Date <= as.Date("2010/06/30"))
+r2_AAPL <- AAPL %>% filter(Date >= as.Date("2008/07/01") & Date <= as.Date("2010/06/30"))
+r2_MAR <- MAR %>% filter(Date >= as.Date("2008/07/01") & Date <= as.Date("2010/06/30"))
+r2_SAFM <- SAFM %>% filter(Date >= as.Date("2008/07/01") & Date <= as.Date("2010/06/30"))
+r2_NEM <- NEM %>% filter(Date >= as.Date("2008/07/01") & Date <= as.Date("2010/06/30"))
+r2_XOM <- XOM %>% filter(Date >= as.Date("2008/07/01") & Date <= as.Date("2010/06/30"))
+
+#combining all tables
+
+r2_S_P <- rename(r2_S_P, S_P = Close) %>% 
+  select(Date, S_P)
+r2_AAPL <- rename(r2_AAPL, AAPL = Close) %>% 
+  select(Date, AAPL)
+r2_MAR <- rename(r2_MAR, MAR = Close) %>% 
+  select(Date, MAR)
+r2_SAFM <- rename(r2_SAFM, SAFM = Close) %>% 
+  select(Date, SAFM)
+r2_NEM <- rename(r2_NEM, NEM = Close) %>% 
+  select(Date, NEM)
+r2_XOM <- rename(r2_XOM, XOM = Close) %>% 
+  select(Date, XOM)
+
+clean6 <- inner_join(r2_S_P, r2_AAPL, by = "Date")
+clean7 <- inner_join(clean6, r2_MAR, by = "Date")
+clean8 <- inner_join(clean7, r2_SAFM, by = "Date")
+clean9 <- inner_join(clean8, r2_NEM, by = "Date")
+recession2 <- inner_join(clean9, r2_XOM, by = "Date")
+
+#creating model
+
+model2 <- lm(S_P ~ AAPL + MAR + SAFM + NEM + XOM , data = recession2)
+summary(model2)
+
+# Recession 3: COVID
+
+r3_S_P <- S_P %>% filter(Date >= as.Date("2020/01/01") & Date <= as.Date("2021/09/30"))
+r3_AAPL <- AAPL %>% filter(Date >= as.Date("2020/01/01") & Date <= as.Date("2021/09/30"))
+r3_MAR <- MAR %>% filter(Date >= as.Date("2020/01/01") & Date <= as.Date("2021/09/30"))
+r3_SAFM <- SAFM %>% filter(Date >= as.Date("2020/01/01") & Date <= as.Date("2021/09/30"))
+r3_NEM <- NEM %>% filter(Date >= as.Date("2020/01/01") & Date <= as.Date("2021/09/30"))
+r3_XOM <- XOM %>% filter(Date >= as.Date("2020/01/01") & Date <= as.Date("2021/09/30"))
+
+#combining all tables
+
+r3_S_P <- rename(r3_S_P, S_P = Close) %>% 
+  select(Date, S_P)
+r3_AAPL <- rename(r3_AAPL, AAPL = Close) %>% 
+  select(Date, AAPL)
+r3_MAR <- rename(r3_MAR, MAR = Close) %>% 
+  select(Date, MAR)
+r3_SAFM <- rename(r3_SAFM, SAFM = Close) %>% 
+  select(Date, SAFM)
+r3_NEM <- rename(r3_NEM, NEM = Close) %>% 
+  select(Date, NEM)
+r3_XOM <- rename(r3_XOM, XOM = Close) %>% 
+  select(Date, XOM)
+
+clean11 <- inner_join(r3_S_P, r3_AAPL, by = "Date")
+clean12 <- inner_join(clean11, r3_MAR, by = "Date")
+clean13 <- inner_join(clean12, r3_SAFM, by = "Date")
+clean14 <- inner_join(clean13, r3_NEM, by = "Date")
+recession3 <- inner_join(clean14, r3_XOM, by = "Date")
+
+#creating model
+
+model3 <- lm(S_P ~ AAPL + MAR + SAFM + NEM + XOM , data = recession3)
+summary(model3)
+
 ```
 
-Talk way more about it. 
+If we only consider the summary for the first and second recession, we can clearly see that SAFM is always the least significant variable for our model. Even though in recession 1, the P value for SAFM is very significant. However, the P value it has is relatively greater than all other variables. Thus, we don’t want to include this variable in our prediction model.
 
+Even though we found out the variables that are significant to determine the market, wouldn’t it be more interesting if we can predict the future market trend? If we look closely at the time period for these recessions, we can see that they are around 1 year and 9 months to 2 years. Thus, I decided to take the data within a year from 2021/04/01 to 2022/04/01 and predict the market in the next 9 months. Simply repeating the same procedures except for the final step which we want to compare different models by keeping different x variables. I have created 8 different models and compared the summary between them. Then I picked 5 of the best summary models to predict the S&P value and compare it with the actual value on 2022/04/07,  2022/04/14 and 2022/04/22 which is a one week interval. I sum up the difference for each week and compare between these 5 models to see which one has the smallest difference. It turns out model6 has the smallest difference which we will be using this model for our prediction.
 
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+
+```
 
 # Model
 
-\begin{equation}
-Pr(\theta | y) = \frac{Pr(y | \theta) Pr(\theta)}{Pr(y)}  (\#eq:bayes)
-\end{equation}
+The model that we will be using is the multiple linear regression model. We will write the model as the following: 
 
-Equation \@ref(eq:bayes) seems useful, eh?
+$$ \bar Y = \beta_0 + \beta_1X_1 + \beta_1X_2 + \beta_1X_3 + \beta_1X_4 $$
+$\bar Y$: the estimated S&P 500 index value
 
-Here's a dumb example of how to use some references: In paper we run our analysis in `R` [@citeR]. We also use the `tidyverse` which was written by @thereferencecanbewhatever If we were interested in baseball data then @citeLahman could be useful. 
+$\beta_0$: intercept
 
-We can use maths by including latex between dollar signs, for instance $\theta$.
+$\beta_1 ... \beta_n$: coefficents for $X_1$ to $X_n$ 
 
+$X_1$: AAPL
 
-# Results
+$X_2$: MAR
+
+$X_3$: NEM
+
+$X_4$: XOM
+
+# Result
 
 # Discussion
 
@@ -104,4 +291,5 @@ Weaknesses and next steps should also be included.
 
 # References
 
+foxbusiness, https://www.foxbusiness.com/markets/startups-great-recession
 
